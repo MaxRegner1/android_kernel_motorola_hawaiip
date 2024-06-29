@@ -1,4 +1,4 @@
-name: Upstream Kernel
+name: Force Rebase Kernel to 5.10
 
 on:
   workflow_dispatch:
@@ -27,9 +27,9 @@ jobs:
         run: |
           git checkout -b upstream-update-5.10
 
-      - name: Rebase to Upstream 5.10
+      - name: Force Rebase to Upstream 5.10
         run: |
-          git rebase upstream/linux-5.10.y
+          git rebase --onto upstream/linux-5.10.y master upstream-update-5.10 || (git rebase --abort && exit 1)
 
       - name: Push Changes
         env:
