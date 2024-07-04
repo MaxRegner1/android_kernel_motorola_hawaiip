@@ -35,7 +35,7 @@ jobs:
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
     - name: Checkout main branch
-      run: git checkout main
+      run: git checkout master
 
     - name: Add upstream remote
       run: git remote add upstream ${{ github.event.inputs['upstream-url'] }}
