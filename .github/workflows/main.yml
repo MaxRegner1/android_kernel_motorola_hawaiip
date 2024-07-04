@@ -1,38 +1,45 @@
-name: Force Rebase Kernel to 5.10
+name: Sync Kernel Repo
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * *'  # Runs daily at midnight UTC
 
 jobs:
-  upstream:
+  sync:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v2
-        with:
-          ref: master
+    - name: Checkout current repository
+      uses: actions/checkout@v2
 
-      - name: Set up Git
-        run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
+    - name: Set up Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Add Upstream and Fetch
-        run: |
-          git remote add upstream https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
-          git fetch upstream
+    - name: Add upstream remote
+      run: git remote add upstream https://github.com/MotorolaMobilityLLC/kernel-mtk.git
 
-      - name: Create New Branch
-        run: |
-          git checkout -b upstream-update-5.10
+    - name: Fetch upstream commits
+      run: git fetch upstream android-14-release-u1tm34.107-34-3
 
-      - name: Force Rebase to Upstream 5.10
-        run: |
-          git rebase --onto upstream/linux-5.10.y master upstream-update-5.10 || (git rebase --abort && exit 1)
+    - name: Checkout new branch from main
+      run: git checkout -b new-branch-name main  # Replace new-branch-name with your desired branch name
 
-      - name: Push Changes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git push origin upstream-update-5.10 --force
+    - name: Cherry-pick upstream commits
+      run: |
+        # Fetch a list of commit hashes from the upstream branch
+        COMMITS=$(git log upstream/android-14-release-u1tm34.107-34-3 --pretty=format:"%H")
+        for commit in $COMMITS; do
+          # Cherry-pick each commit
+          git cherry-pick $commit || (git cherry-pick --abort && break)
+        done
+
+    - name: Push new branch to origin
+      run: git push origin new-branch-name  # Push the new branch to your repository
+
+    - name: Clean up
+      run: git remote remove upstream
