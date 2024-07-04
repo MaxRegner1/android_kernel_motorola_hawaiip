@@ -44,7 +44,7 @@ jobs:
       run: git fetch upstream ${{ github.event.inputs['upstream-branch'] }}
 
     - name: Checkout new branch from main
-      run: git checkout -b ${{ github.event.inputs['branch-name'] }} main
+      run: git checkout -b ${{ github.event.inputs['branch-name'] }} master
 
     - name: Cherry-pick upstream commits
       run: |
