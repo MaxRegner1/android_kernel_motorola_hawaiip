@@ -28,7 +28,7 @@ jobs:
       run: git fetch upstream android-14-release-u1tm34.107-34-3
 
     - name: Checkout new branch from main
-      run: git checkout -b new-branch-name main  # Replace new-branch-name with your desired branch name
+      run: git checkout -b new-branch-name master  # Replace new-branch-name with your desired branch name
 
     - name: Cherry-pick upstream commits
       run: |
