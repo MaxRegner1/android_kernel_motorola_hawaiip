@@ -7,6 +7,19 @@ on:
   schedule:
     - cron: '0 0 * * *'  # Runs daily at midnight UTC
   workflow_dispatch:
+    inputs:
+      upstream-url:
+        description: 'URL of the upstream repository'
+        required: true
+        default: 'https://github.com/MotorolaMobilityLLC/kernel-mtk.git'
+      branch-name:
+        description: 'Name of the new branch to create'
+        required: true
+        default: 'new-branch-name'
+      upstream-branch:
+        description: 'Upstream branch to fetch changes from'
+        required: true
+        default: 'android-14-release-u1tm34.107-34-3'
 
 jobs:
   sync:
@@ -21,26 +34,29 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+    - name: Checkout main branch
+      run: git checkout main
+
     - name: Add upstream remote
-      run: git remote add upstream https://github.com/MotorolaMobilityLLC/kernel-mtk.git
+      run: git remote add upstream ${{ github.event.inputs['upstream-url'] }}
 
     - name: Fetch upstream commits
-      run: git fetch upstream android-14-release-u1tm34.107-34-3
+      run: git fetch upstream ${{ github.event.inputs['upstream-branch'] }}
 
     - name: Checkout new branch from main
-      run: git checkout -b new-branch-name master  # Replace new-branch-name with your desired branch name
+      run: git checkout -b ${{ github.event.inputs['branch-name'] }} main
 
     - name: Cherry-pick upstream commits
       run: |
         # Fetch a list of commit hashes from the upstream branch
-        COMMITS=$(git log upstream/android-14-release-u1tm34.107-34-3 --pretty=format:"%H")
+        COMMITS=$(git log upstream/${{ github.event.inputs['upstream-branch'] }} --pretty=format:"%H")
         for commit in $COMMITS; do
           # Cherry-pick each commit
           git cherry-pick $commit || (git cherry-pick --abort && break)
         done
 
     - name: Push new branch to origin
-      run: git push origin new-branch-name  # Push the new branch to your repository
+      run: git push origin ${{ github.event.inputs['branch-name'] }}
 
     - name: Clean up
       run: git remote remove upstream
